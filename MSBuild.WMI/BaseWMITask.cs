@@ -19,7 +19,7 @@ namespace MSBuild.WMI
 
         #endregion
 
-        #region Public Properties
+        #region Public Properties (Task Parameters)
 
         /// <summary>
         /// IP or host name of remote machine or "localhost"
@@ -83,6 +83,31 @@ namespace MSBuild.WMI
                 _scope.Connect();
 
                 return _scope;
+            }
+        }
+
+        /// <summary>
+        /// Gets task action
+        /// </summary>
+        protected TaskAction Action
+        {
+            get
+            {
+                return (WMI.TaskAction)Enum.Parse(typeof(WMI.TaskAction), TaskAction, true);
+            }
+        }
+
+        /// <summary>
+        /// Gets ManagementObject by query
+        /// </summary>
+        /// <param name="queryString">String WQL query</param>
+        /// <returns>ManagementObject or null if it was not found</returns>
+        protected ManagementObject GetObjectByQuery(string queryString)
+        {
+            var query = new ObjectQuery(queryString);
+            using (var mos = new ManagementObjectSearcher(WMIScope, query))
+            {
+                return mos.Get().Cast<ManagementObject>().FirstOrDefault();
             }
         }
 

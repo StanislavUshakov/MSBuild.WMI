@@ -14,4 +14,15 @@ namespace MSBuild.WMI
         Integrated = 0,
         Classic = 1
     }
+
+    /// <summary>
+    /// Enum represents possible task actions
+    /// </summary>
+    public enum TaskAction
+    {
+        CheckExists = 0,
+        Create = 1,
+        Start = 2,
+        Stop = 3
+    }
 }
