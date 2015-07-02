@@ -8,34 +8,49 @@
     <Password Condition="'$(User)' == ''"></Password>	
     <AppPoolName Condition="'$(AppPoolName)' == ''">TestAppPool</AppPoolName>
     <WebSiteName Condition="'$(WebSiteName)' == ''">TestSite</WebSiteName>
-    <WebSitePort Condition="'$(WebSitePort)' == ''">8088</WebSitePort> 
+    <WebSitePort Condition="'$(WebSitePort)' == ''">8088</WebSitePort>
+	<WebSitePhysicalPath Condition="'$(WebSitePhysicalPath)' == ''">D:\Inetpub\TestSite</WebSitePhysicalPath>
+	<AppPoolExists>False</AppPoolExists>
   </PropertyGroup>
 
   <UsingTask TaskName="MSBuild.WMI.AppPool" AssemblyFile="MSBuild.WMI\bin\Debug\MSBuild.WMI.dll"/>
+  <UsingTask TaskName="MSBuild.WMI.WebSite" AssemblyFile="MSBuild.WMI\bin\Debug\MSBuild.WMI.dll"/>
+  
+  <!-- set up variables -->
+  <Target Name="_Setup">
+    <MSBuild.WMI.AppPool TaskAction="CheckExists" AppPoolName="$(AppPoolName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)">
+      <Output TaskParameter="Exists" PropertyName="AppPoolExists"/>
+    </MSBuild.WMI.AppPool>
+	<MSBuild.WMI.WebSite TaskAction="CheckExists" SiteName="$(WebSiteName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)">
+      <Output TaskParameter="Exists" PropertyName="WebSiteExists"/>
+    </MSBuild.WMI.WebSite>
+  </Target>
   
   <!-- stop web site -->
-  <Target Name="_StopWebSite">
-    <MSBuild.WMI.AppPool TaskAction="Stop" AppPoolName="$(WebSiteAppPoolName)" Machine="$(TargetWebMachineName)" UserName="$(User)" Password="$(Password)" Condition="'$(AppPoolExists)'=='True'" />
+  <Target Name="_StopSite">
+	<MSBuild.WMI.WebSite TaskAction="Stop" SiteName="$(WebSiteName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" Condition="'$(WebSiteExists)'=='True'" />
+    <MSBuild.WMI.AppPool TaskAction="Stop" AppPoolName="$(AppPoolName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" Condition="'$(AppPoolExists)'=='True'" />
   </Target>
-
 
   <!-- stop and deploy web site -->
   <Target Name="_StopAndDeployWebSite">
 
-    <MSBuild.WMI.AppPool TaskAction="CheckExists" AppPoolName="$(AppPoolName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)">
-      <Output TaskParameter="Exists" PropertyName="AppPoolExists"/>
-    </MSBuild.WMI.AppPool>
-
     <!-- stop (if it exists) -->
-    <CallTarget Targets="_StopWebSite" />
+    <CallTarget Targets="_StopSite" />
     
     <!-- create AppPool (if does not exist) -->
     <MSBuild.WMI.AppPool TaskAction="Create" AppPoolName="$(AppPoolName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" Condition="'$(AppPoolExists)'=='False'" />
+	
+	<!-- create web site (if does not exist)-->
+	<MSBuild.WMI.WebSite TaskAction="Create" SiteName="$(WebSiteName)" Port="$(WebSitePort)"
+	    AppPoolName="$(AppPoolName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" PhysicalPath="$(WebSitePhysicalPath)"
+		Condition="'$(WebSiteExists)'=='False'" />
   </Target>
 
   <!-- start all application parts -->
-  <Target Name="_StartAll">    
+  <Target Name="_StartAll">
     <MSBuild.WMI.AppPool TaskAction="Start" AppPoolName="$(AppPoolName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" />
+	<MSBuild.WMI.WebSite TaskAction="Start" SiteName="$(WebSiteName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" />
   </Target>
 
 
@@ -47,19 +62,19 @@
 
 
   <!-- deploy application -->
-  <Target Name="Deploy">
+  <Target Name="Deploy" DependsOnTargets="_Setup">
     <CallTarget Targets="_DeployAll" />
   </Target>    
 
 
   <!-- stop application -->
-  <Target Name="StopApplication">
+  <Target Name="StopApplication" DependsOnTargets="_Setup">
     <CallTarget Targets="_StopWebSite" />
   </Target>
   
   
   <!-- start application -->
-  <Target Name="StartApplication">
+  <Target Name="StartApplication" DependsOnTargets="_Setup">
     <CallTarget Targets="_StartAll" />
   </Target>  
   

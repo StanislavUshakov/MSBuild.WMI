@@ -13,6 +13,8 @@ namespace MSBuild.WMI
     /// Possible actions:
     ///   "CheckExists" - check if the pool with the name specified in "AppPoolName" exists, result is accessible through field "Exists"
     ///   "Create" - create an application pool with the name specified in "AppPoolName"
+    ///   "Start" = starts Application Pool
+    ///   "Stop" - stops Application Pool
     /// </summary>
     public class AppPool : BaseWMITask
     {
@@ -106,7 +108,7 @@ namespace MSBuild.WMI
             mgmtClass.InvokeMethod("Create", inParams, null);
 
             //wait till pool is created
-            WaitTill(() => GetAppPool() == null);
+            WaitTill(() => GetAppPool() != null);
             var appPool = GetAppPool();
 
             //set pipeline mode (default is Classic)
