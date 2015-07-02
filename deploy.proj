@@ -53,25 +53,21 @@
 	<MSBuild.WMI.WebSite TaskAction="Start" SiteName="$(WebSiteName)" Machine="$(Machine)" UserName="$(User)" Password="$(Password)" />
   </Target>
 
-
   <!-- deployment implementation -->
   <Target Name="_DeployAll">
     <CallTarget Targets="_StopAndDeployWebSite" />
     <CallTarget Targets="_StartAll" />
   </Target>
 
-
   <!-- deploy application -->
   <Target Name="Deploy" DependsOnTargets="_Setup">
     <CallTarget Targets="_DeployAll" />
-  </Target>    
-
+  </Target>
 
   <!-- stop application -->
   <Target Name="StopApplication" DependsOnTargets="_Setup">
     <CallTarget Targets="_StopWebSite" />
-  </Target>
-  
+  </Target>  
   
   <!-- start application -->
   <Target Name="StartApplication" DependsOnTargets="_Setup">
