@@ -10,7 +10,13 @@ using System.Threading.Tasks;
 namespace MSBuild.WMI
 {
     /// <summary>
-    /// 
+    /// This class is used for operations with IIS Web Site.
+    /// Possible actions:
+    ///   "CheckExists" - check if the web site with the name specified in "SiteName" exists, result is accessible through field "Exists"
+    ///   "Create" - create a web site with the name specified in "SiteName"
+    ///   "Start" = starts web site
+    ///   "Stop" - stops web site
+    /// Note: bindings with hostnames, IPs should be done manually, site will be created only with custom (specified) port.
     /// </summary>
     public class WebSite : BaseWMITask
     {
