@@ -18,8 +18,14 @@ namespace MSBuild.WMI
     {
         #region Public Properties
 
+        /// <summary>
+        /// Application pool name
+        /// </summary>
         public string AppPoolName { get; set; }
 
+        /// <summary>
+        /// Used as outpur for CheckExists command - True, if application pool with the specified name exists
+        /// </summary>
         [Output]
         public bool Exists { get; set; }
 
@@ -27,6 +33,10 @@ namespace MSBuild.WMI
 
         #region Public Methods
 
+        /// <summary>
+        /// Executes the task
+        /// </summary>
+        /// <returns>True, is task has been executed successfully; False - otherwise</returns>
         public override bool Execute()
         {
             try
@@ -96,12 +106,8 @@ namespace MSBuild.WMI
             mgmtClass.InvokeMethod("Create", inParams, null);
 
             //wait till pool is created
+            WaitTill(() => GetAppPool() == null);
             var appPool = GetAppPool();
-            while (appPool == null)
-            {
-                System.Threading.Thread.Sleep(250);
-                appPool = GetAppPool();
-            }
 
             //set pipeline mode (default is Classic)
             appPool["ManagedPipelineMode"] = (int)ManagedPipelineMode.Integrated;

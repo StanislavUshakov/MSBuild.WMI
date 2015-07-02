@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 using System.Text;
+using System.Threading;
 
 namespace MSBuild.WMI
 {
@@ -108,6 +109,18 @@ namespace MSBuild.WMI
             using (var mos = new ManagementObjectSearcher(WMIScope, query))
             {
                 return mos.Get().Cast<ManagementObject>().FirstOrDefault();
+            }
+        }
+
+        /// <summary>
+        /// Wait till the condition returns True
+        /// </summary>
+        /// <param name="condition">Condition to be checked</param>
+        protected void WaitTill(Func<bool> condition)
+        {
+            while (!condition())
+            {
+                Thread.Sleep(250);
             }
         }
 
